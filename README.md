@@ -1,7 +1,6 @@
-A 3D Airplane Game made by 飞的智动。
-
-Controls:
-
+# A 3D Airplane Game made by 飞的智动。
+***
+## Controls:
 1. W nose down
 2. S nose up
 3. A turn left
@@ -14,8 +13,9 @@ Controls:
 10. 4 change to view 4(Gear view)
 11. ESC pause game
 12. R restart the game
-
-Updates:
+***
+## Updates:
+2.0V : A major update. Beautify the UI. Modify moving and steering mechanism. Add shader. Add more HUD. Totally changed the gaming experience.
 
 1.2v : Changed the textures, add some textures to the repository
 
