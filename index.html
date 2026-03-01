@@ -216,7 +216,33 @@
                         <span class="ml-3 text-white">Enable Crash Animation</span>
                     </label>
                 </div>
-                
+                                <!-- Multiplayer Toggle -->
+                <div class="w-full max-w-md mb-4 mt-4">
+                    <div class="flex items-center justify-between">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="multiplayerToggle" 
+                                   class="sr-only peer">
+                            <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                            <span class="ml-3 text-white font-medium">Enable AI Battle</span>
+                        </label>
+                        <span class="text-accent text-sm" id="playerCountDisplay">0 AI online</span>
+                    </div>
+                    
+                    <!-- Nickname Input (hidden by default) -->
+                    <div id="nicknameContainer" class="mt-3 hidden transition-all duration-300">
+                        <label for="nicknameInput" class="block text-white text-sm mb-1">Enter your nickname:</label>
+                        <div class="flex">
+                            <input type="text" id="nicknameInput" 
+                                   class="flex-1 bg-dark/50 border border-accent/30 rounded-l-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-accent"
+                                   placeholder="Pilot" maxlength="20" value="Player">
+                            <button id="setNicknameBtn" 
+                                    class="bg-accent hover:bg-accent/90 text-dark font-semibold px-4 py-2 rounded-r-lg transition-all duration-300">
+                                Set
+                            </button>
+                        </div>
+                        <p class="text-light text-xs mt-1">SPACE: Missile (1.5s) | J: Flare (2.5s)</p>
+                    </div>
+                </div>
                 <!-- Controls Info Button -->
                 <button onclick="showControlsModal()" 
                         class="text-light hover:text-white transition-colors duration-300 flex items-center">
@@ -289,7 +315,19 @@
                             <span class="text-light">Pause Menu</span>
                         </div>
                     </div>
-                    
+                                        <!-- 在控制面板的 Additional controls 部分之后添加 -->
+                    <div class="glass-effect-dark rounded-lg p-4 control-hint" style="animation-delay: 0.9s">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-dark text-white rounded px-2 py-1 mr-3 font-mono">SPACE</span>
+                            <span class="text-light">Fire Missile (1.5s cooldown) — 发射追踪导弹</span>
+                        </div>
+                    </div>
+                    <div class="glass-effect-dark rounded-lg p-4 control-hint" style="animation-delay: 1.0s">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-dark text-white rounded px-2 py-1 mr-3 font-mono">J</span>
+                            <span class="text-light">Fire Flare (2.5s cooldown) — 发射防御炮</span>
+                        </div>
+                    </div>
                     <!-- Vehicle-specific controls -->
                     <div class="glass-effect-dark rounded-lg p-4 control-hint col-span-1 md:col-span-2" style="animation-delay: 0.9s">
                         <h4 class="text-white font-semibold mb-2">Airplane Controls</h4>
@@ -312,7 +350,7 @@
         </div>
     </div>
     
-    <!-- HUD (Heads-Up Display) -->
+        <!-- HUD (Heads-Up Display) -->
     <div id="hud" class="fixed top-0 left-0 w-full h-full pointer-events-none z-10 p-4 md:p-6 opacity-0 transition-opacity duration-500">
         <!-- Top Left: Flight Data -->
         <div class="absolute top-4 left-4 glass-effect-dark rounded-xl p-4 max-w-xs">
@@ -336,8 +374,59 @@
             </div>
         </div>
         
+        <!-- Top Center: Main HUD Container -->
+        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-2" style="z-index: 20; width: auto; min-width: 300px;">
+            <!-- Multiplayer Info -->
+            <div id="multiplayerHud" class="glass-effect-dark rounded-xl px-6 py-2 hidden w-full text-center">
+                <div class="flex items-center justify-center space-x-4">
+                    <div class="text-accent">
+                        <i class="fa fa-users"></i>
+                    </div>
+                    <div class="text-white" id="onlinePlayersCount">0</div>
+                    <div class="text-light">AI online</div>
+                    <div class="text-green-400" id="playerNameDisplay"></div>
+                </div>
+            </div>
+            
+            <!-- Player Lives Display (只在AI模式下显示) -->
+            <div id="livesDisplay" class="glass-effect-dark rounded-xl px-4 py-2 hidden w-full text-center">
+                <span class="text-light">Lives:</span>
+                <span class="text-white font-bold ml-2" id="playerLives">3</span>
+                <span class="text-light ml-2">Score:</span>
+                <span class="text-yellow-400 font-bold ml-2" id="playerScore">0</span>
+            </div>
+            
+            <!-- Threat Warning Container (所有警告垂直排列) -->
+            <div id="warningContainer" class="flex flex-col items-center space-y-2 w-full">
+                <!-- Missile Incoming Warning -->
+                <div id="threatWarning" class="glass-effect-dark rounded-xl px-4 py-2 hidden w-full text-center border-2 border-red-500">
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fa fa-exclamation-triangle text-red-500 animate-pulse"></i>
+                        <span class="text-white font-semibold">🚀 MISSILE INCOMING!</span>
+                        <i class="fa fa-exclamation-triangle text-red-500 animate-pulse"></i>
+                    </div>
+                </div>
+                
+                <!-- Enemy Proximity Warning (新加) -->
+                <div id="proximityWarning" class="glass-effect-dark rounded-xl px-4 py-2 hidden w-full text-center border-2 border-orange-500">
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fa fa-bullseye text-orange-500 animate-ping"></i>
+                        <span class="text-white font-semibold">⚠️ ENEMY CLOSE! ⚠️</span>
+                        <i class="fa fa-bullseye text-orange-500 animate-ping"></i>
+                    </div>
+                </div>
+                
+                <!-- Invincibility Indicator -->
+                <div id="invincibilityIndicator" class="hidden w-full text-center">
+                    <div class="glass-effect-dark rounded-full px-6 py-2 border-2 border-yellow-400 inline-block">
+                        <span class="text-yellow-400 font-bold animate-pulse">🛡️ INVINCIBLE 🛡️</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Top Right: Compass -->
-        <div class="absolute top-4 right-4 glass-effect-dark rounded-xl p-4 w-48 h-48 flex items-center justify-center">
+        <div class="absolute top-4 right-4 glass-effect-dark rounded-xl p-4 w-48 h-48 flex items-center justify-center" style="z-index: 10;">
             <div class="relative w-full h-full">
                 <div class="absolute inset-0 flex items-center justify-center">
                     <div class="w-32 h-32 rounded-full border-2 border-accent/50 relative">
@@ -346,19 +435,13 @@
                         <div class="absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2 text-white font-bold">E</div>
                         <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 text-white font-bold">S</div>
                         <div class="absolute top-1/2 left-0 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold">W</div>
-                        <!-- 将下面内容直接放入你已有的 glass-effect-dark 容器内部，替换掉原先的多层 wrapper -->
-<div class="relative w-full h-full flex items-center justify-center">
-  <!-- 指针 SVG：只负责旋转（不要在这里做 translate） -->
-  <!-- 只替换这行 SVG，保持你的 wrapper 与固定小白点不变 -->
-<svg id="compassNeedle" viewBox="0 0 100 100" class="w-24 h-24"
-     style="transform-origin:50% 50%; transform-box:view-box; display:block;">
-  <!-- 箭头：尖端靠上，尾部穿过中心 -->
-  <polygon points="50,12 62,50 50,44 38,50" fill="#ff4d4d" />
-  <!-- 不放 circle（你用独立白点），针只做旋转 -->
-</svg>
-  <!-- 固定在视觉中心的小白点（不会随 needle 旋转） -->
-  <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white pointer-events-none"></div>
-</div>
+                        <div class="relative w-full h-full flex items-center justify-center">
+                            <svg id="compassNeedle" viewBox="0 0 100 100" class="w-24 h-24"
+                                 style="transform-origin:50% 50%; transform-box:view-box; display:block;">
+                                <polygon points="50,12 62,50 50,44 38,50" fill="#ff4d4d" />
+                            </svg>
+                            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white pointer-events-none"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -497,18 +580,23 @@
         scene.add(ambientLight);
         
         var directionalLight = new THREE.DirectionalLight(0xffffff, 1.0); // Increased intensity
-        directionalLight.position.set(5, 10, 7.5);
+        directionalLight.position.set(50, 100, 50);
         directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048; // Higher resolution shadows
-        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.mapSize.width = 4096; // Higher resolution shadows
+        directionalLight.shadow.mapSize.height = 4096;
         directionalLight.shadow.camera.near = 0.5;
         directionalLight.shadow.camera.far = 500;
-        directionalLight.shadow.camera.left = -50;
-        directionalLight.shadow.camera.right = 50;
-        directionalLight.shadow.camera.top = 50;
-        directionalLight.shadow.camera.bottom = -50;
+        directionalLight.shadow.camera.left = -150;
+        directionalLight.shadow.camera.right = 150;
+        directionalLight.shadow.camera.top = 150;
+        directionalLight.shadow.camera.bottom = -150;
+        directionalLight.shadow.camera.updateProjectionMatrix();
         scene.add(directionalLight);
-
+		// 添加第二个方向光作为补光，减少背光面过暗
+var fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+fillLight.position.set(-50, 30, -50);
+fillLight.castShadow = false; // 不产生阴影，只提供照明
+scene.add(fillLight);
         // Create an airplane
         function createAirplane(color) {
             var airplaneGeometry = new THREE.BoxGeometry(1, 0.5, 2); // Longer body
@@ -613,7 +701,8 @@
 
             return airplane;
         }
-
+		
+		
         var airplane1 = createAirplane(0xffffff);
         var airplane2 = createAirplane(0xff0000);
 
@@ -671,11 +760,12 @@
 
         var groundGeometry = new THREE.PlaneGeometry(2000, 2000);
         var groundMaterial = new THREE.MeshStandardMaterial({ 
-            map: groundTexture,
-            side: THREE.DoubleSide,
-            roughness: 0.8,
-            metalness: 0.2
-        });
+    map: groundTexture,
+    side: THREE.DoubleSide,
+    roughness: 0.8,
+    metalness: 0.2,
+    emissive: 0x000000  // 确保没有自发光干扰阴影
+});
         var ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = Math.PI / 2;
         ground.position.y = -1;
@@ -901,6 +991,7 @@
         }
 
         // Game variables
+        
         var speed = 0;
         var vehicle = null;
         var crashed = false;
@@ -920,8 +1011,495 @@
         
         // Input key state for continuous control
         var keyState = {};
-
-        // UI Elements
+		
+		        // Multiplayer variables
+        var multiplayerEnabled = false;
+        var playerName = 'Player';
+        var aiPlayers = []; // AI飞机数组
+        var missiles = []; // 所有导弹
+        var flares = []; // 防御炮（干扰弹）
+        var playerLives = 3;
+        var playerMaxLives = 3;
+        var playerScore = 0;
+        var lastMissileTime = 0;
+        var lastFlareTime = 0;
+        var missileCooldown = 1500;
+        var flareCooldown = 2500;
+        var threatDetected = false;
+        var enemyCloseDetected = false; // 新增：敌人接近检测
+        var threatWarningEl = document.getElementById('threatWarning');
+        var proximityWarningEl = document.getElementById('proximityWarning'); // 新增
+        var playerLivesEl = document.getElementById('playerLives');
+        var playerScoreEl = document.getElementById('playerScore');
+        var invincibilityIndicator = document.getElementById('invincibilityIndicator');
+        
+        // Invincibility variables
+        var invincible = false;
+        var invincibilityTimer = 0;
+        var invincibilityDuration = 300;
+        
+        // AI settings
+        var aiCount = 5;
+        var aiRespawnPositions = [
+            {x: 20, y: 5, z: 20},
+            {x: -20, y: 8, z: -20},
+            {x: 30, y: 6, z: -30},
+            {x: -30, y: 7, z: 30},
+            {x: 40, y: 10, z: 40}
+        ];
+		        // ========== AI FUNCTIONS ==========
+        
+        // Create AI airplane with lives tracking
+        function createAIPlane(color, startPos, index) {
+            var plane = createAirplane(color);
+            plane.position.set(startPos.x, startPos.y, startPos.z);
+            plane.castShadow = true;
+            plane.receiveShadow = true;
+            
+            // Store AI data
+            var aiData = {
+                mesh: plane,
+                lives: 3,
+                maxLives: 3,
+                index: index,
+                target: null,
+                speed: 0.08 + Math.random() * 0.05,
+                headingAngle: Math.random() * Math.PI * 2,
+                pitchAngle: (Math.random() - 0.5) * 0.3,
+                rollAngle: 0,
+                attackCooldown: 0,
+                flareCooldown: 0,
+                behavior: 'patrol',
+                lastTargetPos: new THREE.Vector3(),
+                respawnTimer: 0
+            };
+            
+            // Add name tag
+            var canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 64;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText('AI ' + (index + 1), canvas.width/2, 35);
+            
+            // Add life indicators
+            ctx.fillStyle = 'red';
+            ctx.fillRect(20, 45, 20, 10);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(20, 45, 20 * (aiData.lives / 3), 10);
+            
+            var texture = new THREE.CanvasTexture(canvas);
+            var material = new THREE.SpriteMaterial({ map: texture });
+            var sprite = new THREE.Sprite(material);
+            sprite.scale.set(1.5, 0.75, 1);
+            sprite.position.set(0, 1.8, 0);
+            plane.add(sprite);
+            
+            scene.add(plane);
+            return aiData;
+        }
+        
+        // Create a missile (追踪导弹)
+        function createMissile(position, direction, owner, isAIMissile = false) {
+            var missileGroup = new THREE.Group();
+            
+            var bodyGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.8);
+            var bodyMat = new THREE.MeshPhongMaterial({ color: 0xff6600, emissive: 0x442200 });
+            var body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.rotation.x = Math.PI / 2;
+            body.castShadow = true;
+            missileGroup.add(body);
+            
+            var tipGeo = new THREE.ConeGeometry(0.2, 0.4);
+            var tipMat = new THREE.MeshPhongMaterial({ color: 0xff0000, emissive: 0x330000 });
+            var tip = new THREE.Mesh(tipGeo, tipMat);
+            tip.position.set(0, 0, 0.5);
+            missileGroup.add(tip);
+            
+            var finGeo = new THREE.BoxGeometry(0.4, 0.05, 0.15);
+            var finMat = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+            
+            for (var i = 0; i < 4; i++) {
+                var fin = new THREE.Mesh(finGeo, finMat);
+                var angle = (i * Math.PI / 2);
+                fin.position.set(Math.cos(angle) * 0.25, Math.sin(angle) * 0.25, -0.3);
+                fin.rotation.z = angle;
+                missileGroup.add(fin);
+            }
+            
+            var trailGeo = new THREE.SphereGeometry(0.1, 4);
+            var trailMat = new THREE.MeshPhongMaterial({ color: 0xffaa00, emissive: 0xff4400 });
+            var trail = new THREE.Mesh(trailGeo, trailMat);
+            trail.position.set(0, 0, -0.5);
+            missileGroup.add(trail);
+            
+            missileGroup.position.copy(position);
+            
+            var missileData = {
+                mesh: missileGroup,
+                direction: direction.clone().normalize(),
+                speed: 0.25,
+                owner: owner,
+                isAIMissile: isAIMissile,
+                target: null,
+                turnRate: 0.03,
+                age: 0,
+                maxAge: 300
+            };
+            
+            scene.add(missileGroup);
+            return missileData;
+        }
+        
+        // Create a flare (防御炮/干扰弹)
+        function createFlare(position, direction, owner) {
+            var flareGroup = new THREE.Group();
+            
+            var bodyGeo = new THREE.SphereGeometry(0.2, 8);
+            var bodyMat = new THREE.MeshPhongMaterial({ color: 0xffff00, emissive: 0xffaa00 });
+            var body = new THREE.Mesh(bodyGeo, bodyMat);
+            flareGroup.add(body);
+            
+            var glowGeo = new THREE.SphereGeometry(0.3, 8);
+            var glowMat = new THREE.MeshPhongMaterial({ color: 0xffaa00, emissive: 0xff4400, transparent: true, opacity: 0.5 });
+            var glow = new THREE.Mesh(glowGeo, glowMat);
+            flareGroup.add(glow);
+            
+            flareGroup.position.copy(position);
+            
+            var flareData = {
+                mesh: flareGroup,
+                position: position.clone(),
+                direction: direction.clone().normalize(),
+                speed: 0.35,
+                owner: owner,
+                targetMissile: null,
+                age: 0,
+                maxAge: 120,
+                blastRadius: 5
+            };
+            
+            scene.add(flareGroup);
+            return flareData;
+        }
+        
+        // Update AI behavior
+        function updateAI() {
+            var time = Date.now() * 0.001;
+            
+            for (var i = aiPlayers.length - 1; i >= 0; i--) {
+                var ai = aiPlayers[i];
+                
+                if (ai.lives <= 0) {
+                    if (!ai.respawnTimer) {
+                        if (ai.mesh.parent) scene.remove(ai.mesh);
+                        ai.respawnTimer = 180;
+                    } else {
+                        ai.respawnTimer--;
+                        if (ai.respawnTimer <= 0) {
+                            var pos = aiRespawnPositions[i % aiRespawnPositions.length];
+                            ai.mesh.position.set(pos.x, pos.y, pos.z);
+                            ai.lives = 3;
+                            ai.respawnTimer = 0;
+                            ai.behavior = 'patrol';
+                            scene.add(ai.mesh);
+                        }
+                    }
+                    continue;
+                }
+                
+                if (ai.attackCooldown > 0) ai.attackCooldown--;
+                if (ai.flareCooldown > 0) ai.flareCooldown--;
+                
+                var closestTarget = null;
+                var closestDist = 100;
+                
+                if (vehicle && !crashed) {
+                    var distToPlayer = ai.mesh.position.distanceTo(vehicle.position);
+                    if (distToPlayer < closestDist) {
+                        closestDist = distToPlayer;
+                        closestTarget = { type: 'player', obj: vehicle, pos: vehicle.position };
+                    }
+                }
+                
+                for (var j = 0; j < aiPlayers.length; j++) {
+                    if (i === j) continue;
+                    var other = aiPlayers[j];
+                    if (other.lives <= 0) continue;
+                    var dist = ai.mesh.position.distanceTo(other.mesh.position);
+                    if (dist < closestDist && dist < 60) {
+                        closestDist = dist;
+                        closestTarget = { type: 'ai', obj: other.mesh, pos: other.mesh.position, aiData: other };
+                    }
+                }
+                
+                if (closestTarget && closestDist < 50) {
+                    ai.behavior = 'attack';
+                    ai.target = closestTarget;
+                    
+                    if (closestDist < 40 && ai.attackCooldown <= 0 && Math.random() < 0.02) {
+                        var dir = new THREE.Vector3().subVectors(closestTarget.pos, ai.mesh.position).normalize();
+                        var missile = createMissile(ai.mesh.position.clone().add(dir.clone().multiplyScalar(2)), dir, ai, true);
+                        missile.target = closestTarget;
+                        missiles.push(missile);
+                        ai.attackCooldown = 60;
+                    }
+                    
+                    if (ai.flareCooldown <= 0 && Math.random() < 0.01) {
+                        var flareDir = new THREE.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5).normalize();
+                        var flare = createFlare(ai.mesh.position, flareDir, ai);
+                        flares.push(flare);
+                        ai.flareCooldown = 90;
+                    }
+                } else {
+                    ai.behavior = 'patrol';
+                    ai.target = null;
+                }
+                
+                if (ai.behavior === 'attack' && ai.target) {
+                    var targetDir = new THREE.Vector3().subVectors(ai.target.pos, ai.mesh.position).normalize();
+                    var currentDir = new THREE.Vector3(Math.sin(ai.headingAngle), 0, Math.cos(ai.headingAngle));
+                    
+                    var angleToTarget = Math.atan2(targetDir.x, targetDir.z);
+                    var angleDiff = angleToTarget - ai.headingAngle;
+                    while (angleDiff > Math.PI) angleDiff -= 2*Math.PI;
+                    while (angleDiff < -Math.PI) angleDiff += 2*Math.PI;
+                    
+                    ai.headingAngle += angleDiff * 0.03;
+                    
+                    var targetY = ai.target.pos.y;
+                    var dy = targetY - ai.mesh.position.y;
+                    ai.pitchAngle += (dy * 0.01 - ai.pitchAngle) * 0.02;
+                    ai.pitchAngle = Math.max(-0.3, Math.min(0.3, ai.pitchAngle));
+                } else {
+                    ai.headingAngle += (Math.sin(time * 0.5 + i) * 0.02 - ai.headingAngle * 0.01);
+                    ai.pitchAngle += (Math.sin(time * 0.3 + i) * 0.1 - ai.pitchAngle) * 0.01;
+                }
+                
+                var pos = ai.mesh.position;
+                var bound = 80;
+                if (Math.abs(pos.x) > bound) {
+                    ai.headingAngle = Math.atan2(-pos.x, pos.z);
+                }
+                if (Math.abs(pos.z) > bound) {
+                    ai.headingAngle = Math.atan2(pos.x, -pos.z);
+                }
+                if (pos.y < 5) {
+                    pos.y = 5;
+                    ai.pitchAngle = 0.1;
+                }
+                if (pos.y > 30) {
+                    pos.y = 30;
+                    ai.pitchAngle = -0.1;
+                }
+                
+                var moveDir = new THREE.Vector3(
+                    Math.sin(ai.headingAngle),
+                    Math.sin(ai.pitchAngle),
+                    Math.cos(ai.headingAngle)
+                ).normalize();
+                
+                ai.mesh.position.addScaledVector(moveDir, ai.speed);
+                
+                ai.mesh.quaternion.setFromEuler(new THREE.Euler(
+                    -ai.pitchAngle,
+                    ai.headingAngle,
+                    (ai.behavior === 'attack' ? Math.sin(time * 5 + i) * 0.2 : 0),
+                    'YXZ'
+                ));
+            }
+        }
+        
+        // Update missiles and check collisions
+                // Update missiles and check collisions
+                // Update missiles and check collisions
+        function updateMissilesAndFlares() {
+            threatDetected = false;
+            enemyCloseDetected = false; // 重置敌人接近检测
+            
+            // 检查是否有敌人飞机接近
+            if (vehicle && multiplayerEnabled) {
+                for (var e = 0; e < aiPlayers.length; e++) {
+                    var enemy = aiPlayers[e];
+                    if (enemy.lives <= 0) continue;
+                    
+                    // 检测敌人飞机距离（20单位以内）
+                    var distToEnemy = vehicle.position.distanceTo(enemy.mesh.position);
+                    if (distToEnemy < 20) {
+                        enemyCloseDetected = true;
+                        break;
+                    }
+                }
+            }
+            
+            // 更新接近警告显示
+            if (proximityWarningEl) {
+                if (enemyCloseDetected && multiplayerEnabled && !crashed && !isPaused) {
+                    proximityWarningEl.classList.remove('hidden');
+                } else {
+                    proximityWarningEl.classList.add('hidden');
+                }
+            }
+            
+            // Update missiles
+            for (var i = missiles.length - 1; i >= 0; i--) {
+                var m = missiles[i];
+                m.age++;
+                
+                if (!m.target || (m.target.type === 'player' && (!vehicle || crashed)) || 
+                    (m.target.type === 'ai' && m.target.aiData && m.target.aiData.lives <= 0)) {
+                    var closestDist = 100;
+                    var newTarget = null;
+                    
+                    if (vehicle && !crashed) {
+                        var dist = m.mesh.position.distanceTo(vehicle.position);
+                        if (dist < closestDist) {
+                            closestDist = dist;
+                            newTarget = { type: 'player', obj: vehicle, pos: vehicle.position };
+                        }
+                    }
+                    
+                    for (var a = 0; a < aiPlayers.length; a++) {
+                        var ai = aiPlayers[a];
+                        if (ai.lives <= 0) continue;
+                        var dist = m.mesh.position.distanceTo(ai.mesh.position);
+                        if (dist < closestDist) {
+                            closestDist = dist;
+                            newTarget = { type: 'ai', obj: ai.mesh, pos: ai.mesh.position, aiData: ai };
+                        }
+                    }
+                    
+                    m.target = newTarget;
+                }
+                
+                // Turn towards target
+                if (m.target) {
+                    var targetPos = m.target.pos;
+                    var dirToTarget = new THREE.Vector3().subVectors(targetPos, m.mesh.position).normalize();
+                    m.direction.lerp(dirToTarget, m.turnRate).normalize();
+                    
+                    // Threat warning for player - 只有导弹距离玩家20单位以内才警告
+                    if (m.target.type === 'player' && m.mesh.position.distanceTo(vehicle.position) < 20) {
+                        threatDetected = true;
+                    }
+                }
+                
+                m.mesh.position.addScaledVector(m.direction, m.speed);
+                
+                if (m.age > m.maxAge || m.mesh.position.y < -1) {
+                    scene.remove(m.mesh);
+                    missiles.splice(i, 1);
+                    continue;
+                }
+                
+                var hit = false;
+                
+                // Player collision - only if not invincible
+                if (vehicle && !crashed && m.owner !== 'player' && m.mesh.position.distanceTo(vehicle.position) < 2.5) {
+                    if (!invincible) {
+                        playerLives--;
+                        if (playerLivesEl) playerLivesEl.textContent = playerLives;
+                        
+                        if (playerLives <= 0) {
+                            crashed = true;
+                            setTimeout(showGameOverScreen, 500);
+                        } else {
+                            // Flash damage effect
+                            vehicle.material.emissive = new THREE.Color(0xff0000);
+                            setTimeout(() => { if (vehicle) vehicle.material.emissive = new THREE.Color(0x000000); }, 200);
+                        }
+                        hit = true;
+                    } else {
+                        // 无敌状态：反弹导弹效果
+                        var bounceDir = m.direction.clone().negate();
+                        m.direction = bounceDir;
+                        // 添加闪光效果表示反弹
+                        if (vehicle) {
+                            vehicle.material.emissive = new THREE.Color(0xffff00);
+                            setTimeout(() => { if (vehicle) vehicle.material.emissive = new THREE.Color(0x000000); }, 100);
+                        }
+                    }
+                }
+                
+                // AI collision - 确保分数只加给玩家击中的AI
+                for (var a = 0; a < aiPlayers.length; a++) {
+                    var ai = aiPlayers[a];
+                    if (ai.lives <= 0) continue;
+                    if (m.mesh.position.distanceTo(ai.mesh.position) < 2.5) {
+                        // 只有玩家发射的导弹击中AI才加分
+                        if (m.owner === 'player') {
+                            ai.lives--;
+                            playerScore += 500;
+                            if (playerScoreEl) playerScoreEl.textContent = playerScore;
+                        } else {
+                            // AI之间的互相攻击，只扣命不加分
+                            ai.lives--;
+                        }
+                        hit = true;
+                        break;
+                    }
+                }
+                
+                if (hit) {
+                    var expGeo = new THREE.SphereGeometry(0.8, 8);
+                    var expMat = new THREE.MeshPhongMaterial({ color: 0xff6600, emissive: 0xff2200 });
+                    var exp = new THREE.Mesh(expGeo, expMat);
+                    exp.position.copy(m.mesh.position);
+                    scene.add(exp);
+                    setTimeout(() => scene.remove(exp), 200);
+                    
+                    scene.remove(m.mesh);
+                    missiles.splice(i, 1);
+                }
+            }
+            
+            for (var i = flares.length - 1; i >= 0; i--) {
+                var f = flares[i];
+                f.age++;
+                
+                f.mesh.position.addScaledVector(f.direction, f.speed);
+                f.mesh.scale.multiplyScalar(0.98);
+                
+                for (var j = missiles.length - 1; j >= 0; j--) {
+                    var m = missiles[j];
+                    if (f.mesh.position.distanceTo(m.mesh.position) < f.blastRadius) {
+                        scene.remove(m.mesh);
+                        missiles.splice(j, 1);
+                        
+                        var expGeo = new THREE.SphereGeometry(1, 8);
+                        var expMat = new THREE.MeshPhongMaterial({ color: 0xffff00, emissive: 0xffaa00 });
+                        var exp = new THREE.Mesh(expGeo, expMat);
+                        exp.position.copy(f.mesh.position);
+                        scene.add(exp);
+                        setTimeout(() => scene.remove(exp), 200);
+                        
+                        break;
+                    }
+                }
+                
+                if (f.age > f.maxAge || f.mesh.scale.x < 0.1) {
+                    scene.remove(f.mesh);
+                    flares.splice(i, 1);
+                }
+            }
+            
+            if (threatWarningEl) {
+                if (threatDetected) {
+                    threatWarningEl.classList.remove('hidden');
+                } else {
+                    threatWarningEl.classList.add('hidden');
+                }
+            }
+        }
+        
+        // ========== AI FUNCTIONS END ==========
+        
+        // ========== AI FUNCTIONS END ==========
+               // UI Elements
         const menu = document.getElementById('menu');
         const hud = document.getElementById('hud');
         const escMenu = document.getElementById('escMenu');
@@ -935,7 +1513,7 @@
         const altitudeLargeElement = document.getElementById('altitudeLarge');
         const compassNeedle = document.getElementById('compassNeedle');
         const controlsModal = document.getElementById('controlsModal');
-
+		
         // Helper function to normalize angles to [-PI, PI]
         function normalizeAngle(a) {
             a = (a + Math.PI) % (2 * Math.PI);
@@ -960,10 +1538,25 @@
         var visualPitchFollow = 0.04;
         var visualRollFollow = 0.06;
 
+        
         // Animation loop
         function animate() {
-            requestAnimationFrame(animate);
-
+			requestAnimationFrame(animate);
+            
+            // Update invincibility timer
+            if (invincible && invincibilityTimer > 0) {
+                invincibilityTimer--;
+                if (invincibilityTimer <= 0) {
+                    invincible = false;
+                    if (invincibilityIndicator) {
+                        invincibilityIndicator.classList.add('hidden');
+                    }
+                    // 恢复飞机材质
+                    if (vehicle && vehicle.material) {
+                        vehicle.material.emissive = new THREE.Color(0x000000);
+                    }
+                }
+            }
             if (vehicle && !crashed && !isPaused) {
                 // Input handling (continuous)
 
@@ -1077,7 +1670,16 @@ if (compassNeedle) {
     compassNeedle.style.transform = `rotate(${headingDegrees}deg)`;
 }
             }
-
+                // Update multiplayer AI
+            if (multiplayerEnabled) {
+                updateAI();
+                updateMissilesAndFlares();
+                
+                // Update HUD counts
+                var aliveAI = aiPlayers.filter(ai => ai.lives > 0).length;
+                document.getElementById('onlinePlayersCount').textContent = aliveAI;
+            }
+            
             renderer.render(scene, currentCamera);
         }
 		
@@ -1179,7 +1781,8 @@ if (compassNeedle) {
         // Show game over screen
         function showGameOverScreen() {
             if (!finalScoreElement) return;
-            finalScoreElement.textContent = score;
+            // 使用playerScore而不是score，确保分数正确
+            finalScoreElement.textContent = playerScore;
             gameOverScreen.style.opacity = '1';
             gameOverScreen.style.pointerEvents = 'auto';
             var glass = gameOverScreen.querySelector('.glass-effect');
@@ -1213,10 +1816,30 @@ if (compassNeedle) {
 
         // Restart the game
         function restartGame() {
-            // Reset game state
-            crashed = false;
-            speed = 0;
-            score = 0;
+        	 // Clear all projectiles
+            missiles.forEach(m => scene.remove(m.mesh));
+            missiles = [];
+            flares.forEach(f => scene.remove(f.mesh));
+            flares = [];
+            
+            // Remove AI
+            aiPlayers.forEach(ai => {
+                if (ai.mesh.parent) scene.remove(ai.mesh);
+            });
+            aiPlayers = [];
+            
+            // Reset player stats
+            playerLives = 3; // 改为5条命
+            playerScore = 0; // 重置分数
+            if (playerLivesEl) playerLivesEl.textContent = playerLives;
+            if (playerScoreEl) playerScoreEl.textContent = playerScore;
+            
+            // Reset invincibility
+            invincible = false;
+            invincibilityTimer = 0;
+            if (invincibilityIndicator) {
+                invincibilityIndicator.classList.add('hidden');
+            }
             
             // Hide menus
             hideGameOverScreen();
@@ -1230,14 +1853,44 @@ if (compassNeedle) {
             
             // Get selected vehicle and start position
             const selectedVehicle = document.getElementById('vehicleSelect').value;
-            const startPosition = 'runway'; // Default start position
+            const startPosition = 'runway';
             
-            // Start game with current settings
+            // Start game
             startGameWithSettings(selectedVehicle, startPosition);
+            
+            // Reinitialize AI if multiplayer enabled
+            if (multiplayerEnabled && playerName) {
+                setTimeout(() => {
+                    for (var i = 0; i < aiCount; i++) {
+                        var pos = aiRespawnPositions[i % aiRespawnPositions.length];
+                        var colors = [0xff3333, 0x33ff33, 0x3333ff, 0xffff33, 0xff33ff];
+                        var ai = createAIPlane(colors[i % colors.length], 
+                            new THREE.Vector3(pos.x + Math.random()*5, pos.y, pos.z + Math.random()*5), i);
+                        aiPlayers.push(ai);
+                    }
+                }, 500);
+            }
+           
         }
 
         // Return to main menu
+                // Return to main menu
         function returnToMenu() {
+            // 隐藏所有AI相关的HUD元素
+            const livesDisplay = document.getElementById('livesDisplay');
+            const threatWarning = document.getElementById('threatWarning');
+            const invincibilityInd = document.getElementById('invincibilityIndicator');
+            const proximityWarning = document.getElementById('proximityWarning');
+            
+            if (livesDisplay) livesDisplay.classList.add('hidden');
+            if (threatWarning) threatWarning.classList.add('hidden');
+            if (invincibilityInd) invincibilityInd.classList.add('hidden');
+            if (proximityWarning) proximityWarning.classList.add('hidden');
+            
+            // Reset invincibility
+            invincible = false;
+            invincibilityTimer = 0;
+            
             // Reset game state
             crashed = false;
             speed = 0;
@@ -1369,12 +2022,33 @@ if (compassNeedle) {
                 speed = 0; // No initial speed
             }
             
-            // Initialize camera position
+                        // Initialize camera position
             updateCameraPositions();
             switchCamera(0); // Reset to default camera
             
+            // 设置开局无敌
+            invincible = true;
+            invincibilityTimer = invincibilityDuration;
+            if (invincibilityIndicator) {
+                invincibilityIndicator.classList.remove('hidden');
+            }
+            // 给飞机添加金色光芒表示无敌
+            if (vehicle && vehicle.material) {
+                vehicle.material.emissive = new THREE.Color(0x442200);
+            }
+            
             // Update the HUD to reflect the initial values
             updateHUD(0); // Heading starts at 0
+            
+            // 根据多人模式状态控制Lives显示
+            const livesDisplay = document.getElementById('livesDisplay');
+            if (livesDisplay) {
+                if (multiplayerEnabled) {
+                    livesDisplay.classList.remove('hidden');
+                } else {
+                    livesDisplay.classList.add('hidden');
+                }
+            }
         }
 
         // Start game function called from menu buttons
@@ -1429,7 +2103,64 @@ if (compassNeedle) {
             } else if (k === '4') {
                 switchCamera(3);
             }
-
+            // Handle spacebar for missile
+            if (event.code === 'Space' && multiplayerEnabled && !crashed && !isPaused) {
+                event.preventDefault();
+                var now = Date.now();
+                if (now - lastMissileTime > missileCooldown) {
+                    lastMissileTime = now;
+                    
+                    // Fire missile towards crosshair
+                    var forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(vehicle.quaternion);
+                    var spawnPos = vehicle.position.clone().add(forwardDir.clone().multiplyScalar(3));
+                    
+                    // Find closest target to line of fire
+                    var closestTarget = null;
+                    var closestDist = 100;
+                    
+                    for (var a = 0; a < aiPlayers.length; a++) {
+                        var ai = aiPlayers[a];
+                        if (ai.lives <= 0) continue;
+                        
+                        // Project onto direction line
+                        var toTarget = new THREE.Vector3().subVectors(ai.mesh.position, vehicle.position);
+                        var proj = toTarget.dot(forwardDir);
+                        if (proj > 0) {
+                            var perp = new THREE.Vector3().subVectors(toTarget, forwardDir.clone().multiplyScalar(proj));
+                            var dist = perp.length();
+                            if (dist < 5 && proj < closestDist) {
+                                closestDist = proj;
+                                closestTarget = { type: 'ai', obj: ai.mesh, pos: ai.mesh.position, aiData: ai };
+                            }
+                        }
+                    }
+                    
+                    var missile = createMissile(spawnPos, forwardDir, 'player', false);
+                    missile.target = closestTarget;
+                    missiles.push(missile);
+                }
+                return;
+            }
+            
+            // Handle J key for flare
+            if (event.key === 'j' && multiplayerEnabled && !crashed && !isPaused) {
+                event.preventDefault();
+                var now = Date.now();
+                if (now - lastFlareTime > flareCooldown) {
+                    lastFlareTime = now;
+                    
+                    // Fire flare in random direction
+                    var flareDir = new THREE.Vector3(
+                        (Math.random() - 0.5) * 2,
+                        Math.random() * 0.5,
+                        (Math.random() - 0.5) * 2
+                    ).normalize();
+                    
+                    var flare = createFlare(vehicle.position.clone(), flareDir, 'player');
+                    flares.push(flare);
+                }
+                return;
+            }
             // For continuous controls (movement), set keyState
             keyState[k] = true;
         });
@@ -1446,8 +2177,111 @@ if (compassNeedle) {
                 window.event.returnValue = "Your game has not finished, are you sure you will leave?";
         }
 
-        // Initialize the game
+        	// Initialize the game
         document.addEventListener('DOMContentLoaded', () => {
+            // 获取新添加的警告元素
+            const proximityWarningEl = document.getElementById('proximityWarning');
+            
+            // Multiplayer toggle functionality
+            const multiplayerToggle = document.getElementById('multiplayerToggle');
+            const nicknameContainer = document.getElementById('nicknameContainer');
+            const multiplayerHud = document.getElementById('multiplayerHud');
+            const nicknameInput = document.getElementById('nicknameInput');
+            const setNicknameBtn = document.getElementById('setNicknameBtn');
+            const playerNameDisplay = document.getElementById('playerNameDisplay');
+            const playerCountDisplay = document.getElementById('playerCountDisplay');
+            
+                            multiplayerToggle.addEventListener('change', function(e) {
+                multiplayerEnabled = e.target.checked;
+                const livesDisplay = document.getElementById('livesDisplay');
+                const warningContainer = document.getElementById('warningContainer');
+                
+                if (multiplayerEnabled) {
+                    nicknameContainer.classList.remove('hidden');
+                    multiplayerHud.classList.remove('hidden');
+                    nicknameInput.value = playerName;
+                    
+                    // AI模式下显示Lives和Score
+                    if (livesDisplay) {
+                        livesDisplay.classList.remove('hidden');
+                    }
+                    
+                    // 重置玩家生命值和分数
+                    playerLives = 3;
+                    playerScore = 0;
+                    if (playerLivesEl) playerLivesEl.textContent = playerLives;
+                    if (playerScoreEl) playerScoreEl.textContent = playerScore;
+                    
+                    // 初始化AI
+                    if (aiPlayers.length === 0) {
+                        for (var i = 0; i < aiCount; i++) {
+                            var pos = aiRespawnPositions[i % aiRespawnPositions.length];
+                            var colors = [0xff3333, 0x33ff33, 0x3333ff, 0xffff33, 0xff33ff];
+                            var ai = createAIPlane(colors[i % colors.length], 
+                                new THREE.Vector3(pos.x, pos.y, pos.z), i);
+                            aiPlayers.push(ai);
+                        }
+                    }
+                } else {
+                    nicknameContainer.classList.add('hidden');
+                    multiplayerHud.classList.add('hidden');
+                    
+                    // 非AI模式下隐藏Lives和Score
+                    if (livesDisplay) {
+                        livesDisplay.classList.add('hidden');
+                    }
+                    
+                    // 隐藏所有警告
+                    if (threatWarningEl) {
+                        threatWarningEl.classList.add('hidden');
+                    }
+                    if (proximityWarningEl) {
+                        proximityWarningEl.classList.add('hidden');
+                    }
+                    if (invincibilityIndicator) {
+                        invincibilityIndicator.classList.add('hidden');
+                    }
+                    
+                    // Clear AI and projectiles
+                    aiPlayers.forEach(ai => {
+                        if (ai.mesh.parent) scene.remove(ai.mesh);
+                    });
+                    aiPlayers = [];
+                    missiles.forEach(m => scene.remove(m.mesh));
+                    missiles = [];
+                    flares.forEach(f => scene.remove(f.mesh));
+                    flares = [];
+                    
+                    // 重置无敌状态
+                    invincible = false;
+                    invincibilityTimer = 0;
+                }
+                
+                playerCountDisplay.textContent = multiplayerEnabled ? '5 AI' : '0 AI';
+            });
+            
+            setNicknameBtn.addEventListener('click', function() {
+                var name = nicknameInput.value.trim();
+                if (name) {
+                    playerName = name;
+                    playerNameDisplay.textContent = playerName;
+                    
+                    // Initialize AI
+                    if (multiplayerEnabled && aiPlayers.length === 0) {
+                        for (var i = 0; i < aiCount; i++) {
+                            var pos = aiRespawnPositions[i % aiRespawnPositions.length];
+                            var colors = [0xff3333, 0x33ff33, 0x3333ff, 0xffff33, 0xff33ff];
+                            var ai = createAIPlane(colors[i % colors.length], 
+                                new THREE.Vector3(pos.x, pos.y, pos.z), i);
+                            aiPlayers.push(ai);
+                        }
+                    }
+                }
+            });
+            
+            nicknameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') setNicknameBtn.click();
+            });
             // Start the animation loop
             animate();
             
